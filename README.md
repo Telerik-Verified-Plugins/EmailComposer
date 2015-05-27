@@ -124,7 +124,7 @@ After opening the draft the user may have the possibilities to edit, delete or s
 - The default value for *isHTML* is *true*.
 - Its possible to [specify][email_app] the email app on Android.
 - See the [examples][examples] for how to create and show an email draft.
-
+- On iOS the callback will receive a value of 0 (canceled), 1 (saved), 2 (sent), 3 (failed), or 4 (not sent)
 ```javascript
 cordova.plugins.email.open({
     to:          Array, // email addresses for TO field

@@ -26,6 +26,12 @@
 
 #include "TargetConditionals.h"
 
+#define RETURN_CODE_EMAIL_CANCELLED 0
+#define RETURN_CODE_EMAIL_SAVED 1
+#define RETURN_CODE_EMAIL_SENT 2
+#define RETURN_CODE_EMAIL_FAILED 3
+#define RETURN_CODE_EMAIL_NOTSENT 4
+
 @interface APPEmailComposer ()
 
 @property (nonatomic, retain) CDVInvokedUrlCommand* command;
@@ -105,9 +111,31 @@
            didFinishWithResult:(MFMailComposeResult)result
                          error:(NSError*)error
 {
+    int webviewResult = 0;
+
+    switch (result) {
+        case MFMailComposeResultCancelled:
+            webviewResult = RETURN_CODE_EMAIL_CANCELLED;
+            break;
+        case MFMailComposeResultSaved:
+            webviewResult = RETURN_CODE_EMAIL_SAVED;
+            break;
+        case MFMailComposeResultSent:
+            webviewResult =RETURN_CODE_EMAIL_SENT;
+            break;
+        case MFMailComposeResultFailed:
+            webviewResult = RETURN_CODE_EMAIL_FAILED;
+            break;
+        default:
+            webviewResult = RETURN_CODE_EMAIL_NOTSENT;
+            break;
+    }
+
     [controller dismissViewControllerAnimated:YES completion:nil];
 
-    [self execCallback];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:webviewResult]
+                              callbackId:_command.callbackId];
+
 }
 
 #pragma mark -
