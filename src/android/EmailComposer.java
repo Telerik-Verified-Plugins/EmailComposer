@@ -195,7 +195,7 @@ public class EmailComposer extends CordovaPlugin {
             draft.setType("text/html");
 
             if (Build.VERSION.SDK_INT > 15) {
-                draft.putExtra(Intent.EXTRA_HTML_TEXT, body);
+                draft.putExtra(Intent.EXTRA_HTML_TEXT, Html.fromHtml(body));
             }
         } else {
             draft.putExtra(Intent.EXTRA_TEXT, body);
