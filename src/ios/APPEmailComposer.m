@@ -20,9 +20,9 @@
  */
 
 #import "APPEmailComposer.h"
-#import "Cordova/NSData+Base64.h"
 #import "Cordova/CDVAvailability.h"
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <objc/message.h>
 
 #include "TargetConditionals.h"
 
@@ -446,7 +446,23 @@
                                                    range:NSMakeRange(0, length)
                                             withTemplate:@""];
 
-    NSData* data = [NSData dataFromBase64String:dataString];
+    NSData *data;
+    SEL initWithBase64EncodedStringOptionsSEL = @selector(initWithBase64EncodedString:options:);
+    SEL initWithBase64EncodingSEL = @selector(initWithBase64Encoding:);
+
+    // NSData+Base64.h has been removed in Cordova 4.x
+    // Plugin authors are encouraged to use the (iOS 7+) base64 encoding and decoding
+    // methods available in NSData instead.
+    // See for more details:
+    // https://github.com/apache/cordova-ios/blob/master/guides/API%20changes%20in%204.0.md
+
+    if ([NSData instancesRespondToSelector:initWithBase64EncodedStringOptionsSEL]) {
+        // iOS 7.x + support.
+        data = objc_msgSend(NSData.alloc, initWithBase64EncodedStringOptionsSEL, dataString, kNilOptions);
+    } else if ([NSData instancesRespondToSelector:initWithBase64EncodingSEL]) {
+        // iOS 6.x support
+        data = objc_msgSend(NSData.alloc, initWithBase64EncodingSEL, dataString);
+    }
 
     return data;
 }
