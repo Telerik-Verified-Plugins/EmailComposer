@@ -1,5 +1,3 @@
-/* globals Windows: true */
-
 /*
     Copyright 2013-2016 appPlant UG
 
@@ -21,9 +19,6 @@
     under the License.
 */
 
-var WinLauncher = Windows.System.Launcher,
-    WinMail     = Windows.ApplicationModel.Email;
-
 /**
  * Verifies if sending emails is supported on the device.
  *
@@ -35,7 +30,7 @@ var WinLauncher = Windows.System.Launcher,
  *      Interface arguments
  */
 exports.isAvailable = function (success, error, args) {
-    success(true);
+    success(true,false);
 };
 
 /**
@@ -49,20 +44,33 @@ exports.isAvailable = function (success, error, args) {
  *      Interface arguments
  */
 exports.open = function (success, error, args) {
-    var props = args[0],
-        impl  = exports.impl;
+    var props   = args[0],
+        mailto  = 'mailto:' + props.to,
+        options = '';
 
-    if (WinMail) {
-        impl.getDraftWithProperties(props)
-            .then(WinMail.EmailManager.showComposeNewEmailAsync)
-            .done(success, error);
-    } else {
-        var mailTo = impl.getMailTo(props);
-
-        WinLauncher
-            .launchUriAsync(mailTo)
-            .done(success, error);
+    if (props.subject !== '') {
+        options = options + '&subject=' + props.subject;
     }
+
+    if (props.body !== '') {
+        options = options + '&body=' + props.body;
+    }
+
+    if (props.cc !== '') {
+        options = options + '&cc=' + props.cc;
+    }
+
+    if (props.bcc !== '') {
+        options = options + '&bcc=' + props.bcc;
+    }
+
+    if (options !== '') {
+        mailto = mailto + '?' + options.substring(1);
+    }
+
+    window.location.href = mailto;
+
+    success();
 };
 
 require('cordova/exec/proxy').add('EmailComposer', exports);
