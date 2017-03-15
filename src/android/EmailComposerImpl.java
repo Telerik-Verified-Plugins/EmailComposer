@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Patterns;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,13 +46,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import static de.appplant.cordova.emailcomposer.EmailComposer.LOG_TAG;
 
 /**
  * Implements the interface methods of the plugin.
  */
-public class EmailComposerImpl {
+class EmailComposerImpl {
 
     /**
      * The default mailto: scheme.
@@ -70,7 +72,7 @@ public class EmailComposerImpl {
      * The application context.
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void cleanupAttachmentFolder (Context ctx) {
+    void cleanupAttachmentFolder (Context ctx) {
         try {
             File dir = new File(ctx.getExternalCacheDir() + ATTACHMENT_FOLDER);
 
@@ -93,7 +95,7 @@ public class EmailComposerImpl {
      * @param ctx
      * The application context.
      */
-    public boolean[] canSendMail (String id, Context ctx) {
+    boolean[] canSendMail (String id, Context ctx) {
         // is possible with specified app
         boolean withScheme = isAppInstalled(id, ctx);
         // is possible in general
@@ -113,7 +115,7 @@ public class EmailComposerImpl {
      * The resulting intent.
      * @throws JSONException
      */
-    public Intent getDraftWithProperties (JSONObject params, Context ctx)
+    Intent getDraftWithProperties (JSONObject params, Context ctx)
             throws JSONException {
 
         Intent mail = getEmailIntent();
@@ -496,6 +498,10 @@ public class EmailComposerImpl {
         resId = res.getIdentifier(resName, dirName, pkgName);
 
         if (resId == 0) {
+            resId = res.getIdentifier(resName, "mipmap", pkgName);
+        }
+
+        if (resId == 0) {
             resId = res.getIdentifier(resName, "drawable", pkgName);
         }
 
@@ -514,8 +520,9 @@ public class EmailComposerImpl {
         AccountManager am  = AccountManager.get(ctx);
 
         try {
+            Pattern emailPattern = Patterns.EMAIL_ADDRESS;
             for (Account account : am.getAccounts()) {
-                if (account.type.endsWith("mail")) {
+                if (emailPattern.matcher(account.name).matches()) {
                     return true;
                 }
             }
